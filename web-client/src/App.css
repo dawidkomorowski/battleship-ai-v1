@@ -1,0 +1,11 @@
+.app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+h1 {
+  font-size: 3rem;
+  letter-spacing: 0.05em;
+}
