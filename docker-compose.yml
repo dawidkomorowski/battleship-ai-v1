@@ -5,3 +5,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:80"
+    depends_on:
+      - identity-service
+
+  identity-service:
+    build:
+      context: ./identity-service
+      dockerfile: Dockerfile
+    expose:
+      - "8080"
