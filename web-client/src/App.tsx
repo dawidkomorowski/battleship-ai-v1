@@ -54,10 +54,22 @@ function StatusDot({ status }: { status: ServiceStatus }) {
 function App() {
   const identityStatus = useServiceStatus('/api/identity/status', 5000, 5000)
 
+  const [showUsernameForm, setShowUsernameForm] = useState(false)
+  const [username, setUsername] = useState('')
+  const [touched, setTouched] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const isValid = username.trim().length > 0
+  const showError = touched && !isValid
+
+  const handlePlay = () => {
+    setShowUsernameForm(true)
+    setTimeout(() => inputRef.current?.focus(), 0)
+  }
+
   return (
     <div className="app">
-      <h1>Battleship Game</h1>
-      <section className="service-status">
+      <aside className="service-status">
         <h2>Service Status</h2>
         <ul>
           <li>
@@ -65,7 +77,41 @@ function App() {
             <span>identity-service</span>
           </li>
         </ul>
-      </section>
+      </aside>
+
+      <main className="main-content">
+        <h1>Battleship Game</h1>
+
+        {!showUsernameForm && (
+          <button className="btn-play" onClick={handlePlay}>Play</button>
+        )}
+
+        {showUsernameForm && (
+          <div className="username-form">
+            <div className="input-group">
+              <input
+                ref={inputRef}
+                className={`username-input${showError ? ' username-input--error' : ''}`}
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onBlur={() => setTouched(true)}
+                aria-label="Username"
+                aria-describedby={showError ? 'username-error' : undefined}
+              />
+              {showError && (
+                <p id="username-error" className="input-error">
+                  Username must not be empty.
+                </p>
+              )}
+            </div>
+            <button className="btn-lobby" disabled={!isValid}>
+              Enter Lobby
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   )
 }
