@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
+import { identityStorage, type Identity } from './IdentityStorage'
 
 // ── Service status polling ───────────────────────────────────────────────
 
@@ -97,12 +98,14 @@ function App() {
   const [touched, setTouched] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<CreateUserError | null>(null)
+  const [previousIdentities, setPreviousIdentities] = useState<Identity[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
 
   const isValid = username.trim().length > 0
   const showInputError = touched && !isValid
 
   const handlePlay = () => {
+    setPreviousIdentities(identityStorage.list())
     setView('entering')
     setTimeout(() => inputRef.current?.focus(), 0)
   }
@@ -118,6 +121,11 @@ function App() {
 
     setSubmitting(false)
     if (result.ok) {
+      identityStorage.add({
+        id: result.data.id,
+        username: username.trim(),
+        authToken: result.data.authToken,
+      })
       setView('lobby')
     } else {
       setSubmitError(result.error)
@@ -184,6 +192,16 @@ function App() {
             >
               {submitting ? 'Entering…' : 'Enter Lobby'}
             </button>
+            {previousIdentities.length > 0 && (
+              <div className="previous-identities">
+                <p className="previous-identities__label">Last time played as:</p>
+                <ul>
+                  {previousIdentities.map((identity) => (
+                    <li key={identity.id}>{identity.username}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 

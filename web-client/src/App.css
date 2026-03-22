@@ -185,3 +185,34 @@ h1 {
   letter-spacing: 0.05em;
   color: #7a9bbf;
 }
+
+/* ── Previous identities ── */
+
+.previous-identities {
+  width: 100%;
+  border-top: 1px solid #1e3a5f;
+  padding-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.previous-identities__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7a9bbf;
+}
+
+.previous-identities ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.previous-identities li {
+  font-size: 0.9rem;
+  color: #c0d4e8;
+  padding: 0.2rem 0;
+}
