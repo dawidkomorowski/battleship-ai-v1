@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
+// ── Service status polling ───────────────────────────────────────────────
+
 type ServiceStatus = 'ok' | 'error' | 'unknown'
 
 function useServiceStatus(url: string, intervalMs: number, timeoutMs: number): ServiceStatus {
@@ -51,21 +53,83 @@ function StatusDot({ status }: { status: ServiceStatus }) {
   return <span className={`status-dot status-dot--${status}`} aria-label={status} />
 }
 
+// ── Identity API ───────────────────────────────────────────────────
+
+interface CreateUserOk {
+  id: string
+  authToken: string
+}
+
+type CreateUserError = 'username_taken' | 'unknown'
+
+async function createUser(username: string): Promise<{ ok: true; data: CreateUserOk } | { ok: false; error: CreateUserError }> {
+  try {
+    const res = await fetch('/api/identity/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username }),
+    })
+
+    if (res.ok) {
+      const data: CreateUserOk = await res.json()
+      return { ok: true, data }
+    }
+
+    const body = await res.json().catch(() => null)
+    if (res.status === 409 && body?.error === 'username_taken') {
+      return { ok: false, error: 'username_taken' }
+    }
+    return { ok: false, error: 'unknown' }
+  } catch {
+    return { ok: false, error: 'unknown' }
+  }
+}
+
+// ── App ───────────────────────────────────────────────────────────────
+
+type View = 'home' | 'entering' | 'lobby'
+
 function App() {
   const identityStatus = useServiceStatus('/api/identity/status', 5000, 5000)
 
-  const [showUsernameForm, setShowUsernameForm] = useState(false)
+  const [view, setView] = useState<View>('home')
   const [username, setUsername] = useState('')
   const [touched, setTouched] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<CreateUserError | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const isValid = username.trim().length > 0
-  const showError = touched && !isValid
+  const showInputError = touched && !isValid
 
   const handlePlay = () => {
-    setShowUsernameForm(true)
+    setView('entering')
     setTimeout(() => inputRef.current?.focus(), 0)
   }
+
+  const handleEnterLobby = async () => {
+    setTouched(true)
+    if (!isValid) return
+
+    setSubmitting(true)
+    setSubmitError(null)
+
+    const result = await createUser(username.trim())
+
+    setSubmitting(false)
+    if (result.ok) {
+      setView('lobby')
+    } else {
+      setSubmitError(result.error)
+    }
+  }
+
+  const submitErrorMessage =
+    submitError === 'username_taken'
+      ? 'This username is already taken. Please choose another.'
+      : submitError === 'unknown'
+      ? 'Something went wrong. Please try again.'
+      : null
 
   return (
     <div className="app">
@@ -82,33 +146,50 @@ function App() {
       <main className="main-content">
         <h1>Battleship Game</h1>
 
-        {!showUsernameForm && (
+        {view === 'home' && (
           <button className="btn-play" onClick={handlePlay}>Play</button>
         )}
 
-        {showUsernameForm && (
+        {view === 'entering' && (
           <div className="username-form">
             <div className="input-group">
               <input
                 ref={inputRef}
-                className={`username-input${showError ? ' username-input--error' : ''}`}
+                className={`username-input${showInputError ? ' username-input--error' : ''}`}
                 type="text"
                 placeholder="Username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => { setUsername(e.target.value); setSubmitError(null) }}
                 onBlur={() => setTouched(true)}
                 aria-label="Username"
-                aria-describedby={showError ? 'username-error' : undefined}
+                aria-describedby={
+                  showInputError ? 'username-error' :
+                  submitError ? 'submit-error' : undefined
+                }
+                disabled={submitting}
               />
-              {showError && (
+              {showInputError && (
                 <p id="username-error" className="input-error">
                   Username must not be empty.
                 </p>
               )}
             </div>
-            <button className="btn-lobby" disabled={!isValid}>
-              Enter Lobby
+            {submitErrorMessage && (
+              <p id="submit-error" className="submit-error">{submitErrorMessage}</p>
+            )}
+            <button
+              className="btn-lobby"
+              onClick={handleEnterLobby}
+              disabled={submitting}
+            >
+              {submitting ? 'Entering…' : 'Enter Lobby'}
             </button>
+          </div>
+        )}
+
+        {view === 'lobby' && (
+          <div className="lobby-placeholder">
+            <h2>Lobby</h2>
           </div>
         )}
       </main>
