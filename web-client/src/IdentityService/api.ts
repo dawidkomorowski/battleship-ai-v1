@@ -9,6 +9,21 @@ export type CreateUserResult =
   | { ok: true; data: CreateUserOk }
   | { ok: false; error: CreateUserError }
 
+/**
+ * Verifies that a stored identity is still valid against the identity-service.
+ * Returns true if the identity is accepted, false if rejected (403) or unreachable.
+ */
+export async function verifyIdentity(id: string, authToken: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/identity/users/${encodeURIComponent(id)}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    })
+    return res.ok
+  } catch {
+    return true // network failure — do not purge optimistically
+  }
+}
+
 export async function createUser(username: string): Promise<CreateUserResult> {
   try {
     const res = await fetch('/api/identity/users', {

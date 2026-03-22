@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { identityStorage, type Identity } from './IdentityStorage'
-import { createUser, type CreateUserError } from './IdentityService/api'
+import { createUser, verifyIdentity, type CreateUserError } from './IdentityService/api'
 import { PreviousIdentities } from './components/PreviousIdentities'
 
 // ── Service status polling ───────────────────────────────────────────────
@@ -75,7 +75,14 @@ function App() {
   const isValid = username.trim().length > 0
   const showInputError = touched && !isValid
 
-  const handlePlay = () => {
+  const handlePlay = async () => {
+    const stored = identityStorage.list()
+    await Promise.all(
+      stored.map(async (identity) => {
+        const valid = await verifyIdentity(identity.id, identity.authToken)
+        if (!valid) identityStorage.delete(identity.id)
+      })
+    )
     setPreviousIdentities(identityStorage.list())
     setView('entering')
     setTimeout(() => inputRef.current?.focus(), 0)

@@ -17,6 +17,35 @@ func NewHandler(store *Store) *Handler {
 	return &Handler{store: store}
 }
 
+// Get handles GET /users/{id} — authenticates the request via the
+// Authorization: Bearer <token> header and returns the user's public profile.
+func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", "GET")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := strings.TrimPrefix(r.URL.Path, "/users/")
+	if id == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+
+	u := h.store.GetByID(id)
+	if u == nil || u.AuthToken != token {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, getUserResponse{
+		ID:       u.ID,
+		Username: u.Username,
+	})
+}
+
 // Create handles POST /users — validates the request, creates a user, and
 // returns the new user's ID and auth token.
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +99,11 @@ type createUserRequest struct {
 type createUserResponse struct {
 	ID        string `json:"id"`
 	AuthToken string `json:"authToken"`
+}
+
+type getUserResponse struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
 }
 
 type errorResponse struct {
