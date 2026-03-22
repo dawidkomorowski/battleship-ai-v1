@@ -47,6 +47,11 @@ export class IdentityStorage {
       return null
     }
   }
+
+  delete(id: string): void {
+    const updated = this.list().filter((i) => i.id !== id)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+  }
 }
 
 export const identityStorage = new IdentityStorage()

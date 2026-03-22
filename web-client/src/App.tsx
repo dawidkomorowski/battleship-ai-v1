@@ -166,7 +166,13 @@ function App() {
             >
               {submitting ? 'Entering…' : 'Enter Lobby'}
             </button>
-            <PreviousIdentities identities={previousIdentities} />
+            <PreviousIdentities
+              identities={previousIdentities}
+              onDelete={(identity) => {
+                identityStorage.delete(identity.id)
+                setPreviousIdentities(identityStorage.list())
+              }}
+            />
           </div>
         )}
 
