@@ -9,7 +9,8 @@ battleship-ai-v1/
 ├── docker-compose.yml    # Top-level compose file to build and run all services
 ├── ADR.md                # Architecture Decision Record
 ├── web-client/           # React/TypeScript frontend application
-└── identity-service/     # Go service — user identity and session tracking
+├── identity-service/     # Go service — user identity and session tracking
+└── lobby-service/        # Go service — lobby user list
 ```
 
 ## How to Use
@@ -37,6 +38,7 @@ docker compose down
 |------------------|---------------------------------|
 | Web client       | http://localhost:3000           |
 | Identity service | http://localhost:3000/api/identity/status |
+| Lobby service    | http://localhost:3000/api/lobby/status |
 
 ---
 

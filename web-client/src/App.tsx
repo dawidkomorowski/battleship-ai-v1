@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { identityStorage, type Identity } from './IdentityStorage'
 import { createUser, verifyIdentity, type CreateUserError } from './IdentityService/api'
+import { joinLobby } from './LobbyService/api'
 import { PreviousIdentities } from './components/PreviousIdentities'
+import { Lobby } from './components/Lobby'
 
 // ── Service status polling ───────────────────────────────────────────────
 
@@ -62,6 +64,7 @@ type View = 'home' | 'entering' | 'lobby'
 
 function App() {
   const identityStatus = useServiceStatus('/api/identity/status', 5000, 5000)
+  const lobbyStatus = useServiceStatus('/api/lobby/status', 5000, 5000)
 
   const [view, setView] = useState<View>('home')
   const [username, setUsername] = useState('')
@@ -107,6 +110,7 @@ function App() {
       identityStorage.add(identity)
       identityStorage.setCurrent(identity)
       setCurrentIdentity(identity)
+      await joinLobby(identity.id, identity.authToken)
       setView('lobby')
     } else {
       setSubmitError(result.error)
@@ -128,6 +132,10 @@ function App() {
           <li>
             <StatusDot status={identityStatus} />
             <span>identity-service</span>
+          </li>
+          <li>
+            <StatusDot status={lobbyStatus} />
+            <span>lobby-service</span>
           </li>
         </ul>
       </aside>
@@ -183,13 +191,8 @@ function App() {
           </div>
         )}
 
-        {view === 'lobby' && (
-          <div className="lobby-placeholder">
-            <h2>Lobby</h2>
-            {currentIdentity && (
-              <p className="lobby-username">Playing as {currentIdentity.username}</p>
-            )}
-          </div>
+        {view === 'lobby' && currentIdentity && (
+          <Lobby currentIdentity={currentIdentity} />
         )}
       </main>
     </div>

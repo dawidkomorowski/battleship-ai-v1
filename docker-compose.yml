@@ -7,6 +7,7 @@ services:
       - "3000:80"
     depends_on:
       - identity-service
+      - lobby-service
 
   identity-service:
     build:
@@ -14,3 +15,14 @@ services:
       dockerfile: Dockerfile
     expose:
       - "8080"
+
+  lobby-service:
+    build:
+      context: ./lobby-service
+      dockerfile: Dockerfile
+    expose:
+      - "8081"
+    environment:
+      - IDENTITY_SERVICE_URL=http://identity-service:8080
+    depends_on:
+      - identity-service

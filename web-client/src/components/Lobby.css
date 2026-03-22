@@ -1,0 +1,40 @@
+.lobby {
+  background-color: #0f2240;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  padding: 1.5rem 2rem;
+  min-width: 280px;
+}
+
+.lobby__title {
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+  color: #7a9bbf;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.lobby__users {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.lobby__user {
+  font-size: 0.95rem;
+  color: #8ab0d0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.lobby__user--me {
+  color: #e0e8f0;
+  font-weight: 600;
+}
+
+.lobby__you {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #7a9bbf;
+}
