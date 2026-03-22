@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { identityStorage, type Identity } from './IdentityStorage'
+import { createUser, type CreateUserError } from './IdentityService/api'
+import { PreviousIdentities } from './components/PreviousIdentities'
 
 // ── Service status polling ───────────────────────────────────────────────
 
@@ -54,38 +56,6 @@ function StatusDot({ status }: { status: ServiceStatus }) {
   return <span className={`status-dot status-dot--${status}`} aria-label={status} />
 }
 
-// ── Identity API ───────────────────────────────────────────────────
-
-interface CreateUserOk {
-  id: string
-  authToken: string
-}
-
-type CreateUserError = 'username_taken' | 'unknown'
-
-async function createUser(username: string): Promise<{ ok: true; data: CreateUserOk } | { ok: false; error: CreateUserError }> {
-  try {
-    const res = await fetch('/api/identity/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username }),
-    })
-
-    if (res.ok) {
-      const data: CreateUserOk = await res.json()
-      return { ok: true, data }
-    }
-
-    const body = await res.json().catch(() => null)
-    if (res.status === 409 && body?.error === 'username_taken') {
-      return { ok: false, error: 'username_taken' }
-    }
-    return { ok: false, error: 'unknown' }
-  } catch {
-    return { ok: false, error: 'unknown' }
-  }
-}
-
 // ── App ───────────────────────────────────────────────────────────────
 
 type View = 'home' | 'entering' | 'lobby'
@@ -99,6 +69,7 @@ function App() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<CreateUserError | null>(null)
   const [previousIdentities, setPreviousIdentities] = useState<Identity[]>([])
+  const [currentIdentity, setCurrentIdentity] = useState<Identity | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const isValid = username.trim().length > 0
@@ -121,11 +92,14 @@ function App() {
 
     setSubmitting(false)
     if (result.ok) {
-      identityStorage.add({
+      const identity: Identity = {
         id: result.data.id,
         username: username.trim(),
         authToken: result.data.authToken,
-      })
+      }
+      identityStorage.add(identity)
+      identityStorage.setCurrent(identity)
+      setCurrentIdentity(identity)
       setView('lobby')
     } else {
       setSubmitError(result.error)
@@ -192,22 +166,16 @@ function App() {
             >
               {submitting ? 'Entering…' : 'Enter Lobby'}
             </button>
-            {previousIdentities.length > 0 && (
-              <div className="previous-identities">
-                <p className="previous-identities__label">Last time played as:</p>
-                <ul>
-                  {previousIdentities.map((identity) => (
-                    <li key={identity.id}>{identity.username}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <PreviousIdentities identities={previousIdentities} />
           </div>
         )}
 
         {view === 'lobby' && (
           <div className="lobby-placeholder">
             <h2>Lobby</h2>
+            {currentIdentity && (
+              <p className="lobby-username">Playing as {currentIdentity.username}</p>
+            )}
           </div>
         )}
       </main>

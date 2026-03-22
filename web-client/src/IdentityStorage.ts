@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'battleship_identities'
+const CURRENT_KEY = 'battleship_current_identity'
 
 export interface Identity {
   id: string
@@ -30,6 +31,20 @@ export class IdentityStorage {
       return parsed as Identity[]
     } catch {
       return []
+    }
+  }
+
+  setCurrent(identity: Identity): void {
+    localStorage.setItem(CURRENT_KEY, JSON.stringify(identity))
+  }
+
+  getCurrent(): Identity | null {
+    try {
+      const raw = localStorage.getItem(CURRENT_KEY)
+      if (!raw) return null
+      return JSON.parse(raw) as Identity
+    } catch {
+      return null
     }
   }
 }
