@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
 import './App.css'
 import { identityStorage, type Identity } from './IdentityStorage'
 import { createUser, verifyIdentity, type CreateUserError } from './IdentityService/api'
@@ -58,21 +59,44 @@ function StatusDot({ status }: { status: ServiceStatus }) {
   return <span className={`status-dot status-dot--${status}`} aria-label={status} />
 }
 
-// ── App ───────────────────────────────────────────────────────────────
+// ── Shared shell ─────────────────────────────────────────────────────────
 
-type View = 'home' | 'entering' | 'lobby'
-
-function App() {
+function AppShell() {
   const identityStatus = useServiceStatus('/api/identity/status', 5000, 5000)
   const lobbyStatus = useServiceStatus('/api/lobby/status', 5000, 5000)
 
-  const [view, setView] = useState<View>('home')
+  return (
+    <div className="app">
+      <aside className="service-status">
+        <h2>Service Status</h2>
+        <ul>
+          <li>
+            <StatusDot status={identityStatus} />
+            <span>identity-service</span>
+          </li>
+          <li>
+            <StatusDot status={lobbyStatus} />
+            <span>lobby-service</span>
+          </li>
+        </ul>
+      </aside>
+      <Outlet />
+    </div>
+  )
+}
+
+// ── Home page (landing + entering) ───────────────────────────────────────
+
+type HomeView = 'home' | 'entering'
+
+function HomePage() {
+  const navigate = useNavigate()
+  const [view, setView] = useState<HomeView>('home')
   const [username, setUsername] = useState('')
   const [touched, setTouched] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<CreateUserError | null>(null)
   const [previousIdentities, setPreviousIdentities] = useState<Identity[]>([])
-  const [currentIdentity, setCurrentIdentity] = useState<Identity | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const isValid = username.trim().length > 0
@@ -89,6 +113,12 @@ function App() {
     setPreviousIdentities(identityStorage.list())
     setView('entering')
     setTimeout(() => inputRef.current?.focus(), 0)
+  }
+
+  const enterLobbyAs = async (identity: Identity) => {
+    identityStorage.setCurrent(identity)
+    await joinLobby(identity.id, identity.authToken)
+    navigate('/lobby')
   }
 
   const handleEnterLobby = async () => {
@@ -108,31 +138,16 @@ function App() {
         authToken: result.data.authToken,
       }
       identityStorage.add(identity)
-      identityStorage.setCurrent(identity)
-      setCurrentIdentity(identity)
-      await joinLobby(identity.id, identity.authToken)
-      setView('lobby')
+      await enterLobbyAs(identity)
     } else {
       setSubmitError(result.error)
     }
   }
 
-  const handleLeaveLobby = async () => {
-    if (currentIdentity) {
-      await leaveLobby(currentIdentity.id, currentIdentity.authToken)
-    }
-    setCurrentIdentity(null)
-    setView('home')
-  }
-
   const handlePlayAs = async (identity: Identity) => {
     setSubmitting(true)
-    setSubmitError(null)
-    identityStorage.setCurrent(identity)
-    setCurrentIdentity(identity)
-    await joinLobby(identity.id, identity.authToken)
+    await enterLobbyAs(identity)
     setSubmitting(false)
-    setView('lobby')
   }
 
   const submitErrorMessage =
@@ -143,79 +158,92 @@ function App() {
       : null
 
   return (
-    <div className="app">
-      <aside className="service-status">
-        <h2>Service Status</h2>
-        <ul>
-          <li>
-            <StatusDot status={identityStatus} />
-            <span>identity-service</span>
-          </li>
-          <li>
-            <StatusDot status={lobbyStatus} />
-            <span>lobby-service</span>
-          </li>
-        </ul>
-      </aside>
+    <main className="main-content">
+      <h1>Battleship Game</h1>
 
-      <main className="main-content">
-        <h1>Battleship Game</h1>
+      {view === 'home' && (
+        <button className="btn-play" onClick={handlePlay}>Play</button>
+      )}
 
-        {view === 'home' && (
-          <button className="btn-play" onClick={handlePlay}>Play</button>
-        )}
-
-        {view === 'entering' && (
-          <div className="username-form">
-            <div className="input-group">
-              <input
-                ref={inputRef}
-                className={`username-input${showInputError ? ' username-input--error' : ''}`}
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => { setUsername(e.target.value); setSubmitError(null) }}
-                onBlur={() => setTouched(true)}
-                aria-label="Username"
-                aria-describedby={
-                  showInputError ? 'username-error' :
-                  submitError ? 'submit-error' : undefined
-                }
-                disabled={submitting}
-              />
-              {showInputError && (
-                <p id="username-error" className="input-error">
-                  Username must not be empty.
-                </p>
-              )}
-            </div>
-            {submitErrorMessage && (
-              <p id="submit-error" className="submit-error">{submitErrorMessage}</p>
-            )}
-            <button
-              className="btn-lobby"
-              onClick={handleEnterLobby}
+      {view === 'entering' && (
+        <div className="username-form">
+          <div className="input-group">
+            <input
+              ref={inputRef}
+              className={`username-input${showInputError ? ' username-input--error' : ''}`}
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => { setUsername(e.target.value); setSubmitError(null) }}
+              onBlur={() => setTouched(true)}
+              aria-label="Username"
+              aria-describedby={
+                showInputError ? 'username-error' :
+                submitError ? 'submit-error' : undefined
+              }
               disabled={submitting}
-            >
-              {submitting ? 'Entering…' : 'Enter Lobby'}
-            </button>
-            <PreviousIdentities
-              identities={previousIdentities}
-              onDelete={(identity) => {
-                identityStorage.delete(identity.id)
-                setPreviousIdentities(identityStorage.list())
-              }}
-              onPlayAs={handlePlayAs}
             />
+            {showInputError && (
+              <p id="username-error" className="input-error">
+                Username must not be empty.
+              </p>
+            )}
           </div>
-        )}
-
-        {view === 'lobby' && currentIdentity && (
-          <Lobby currentIdentity={currentIdentity} onLeave={handleLeaveLobby} />
-        )}
-      </main>
-    </div>
+          {submitErrorMessage && (
+            <p id="submit-error" className="submit-error">{submitErrorMessage}</p>
+          )}
+          <button
+            className="btn-lobby"
+            onClick={handleEnterLobby}
+            disabled={submitting}
+          >
+            {submitting ? 'Entering…' : 'Enter Lobby'}
+          </button>
+          <PreviousIdentities
+            identities={previousIdentities}
+            onDelete={(identity) => {
+              identityStorage.delete(identity.id)
+              setPreviousIdentities(identityStorage.list())
+            }}
+            onPlayAs={handlePlayAs}
+          />
+        </div>
+      )}
+    </main>
   )
 }
 
-export default App
+// ── Lobby page ────────────────────────────────────────────────────────────
+
+function LobbyPage() {
+  const navigate = useNavigate()
+  const identity = identityStorage.getCurrent()
+
+  if (!identity) return <Navigate to="/" replace />
+
+  const handleLeave = async () => {
+    await leaveLobby(identity.id, identity.authToken)
+    navigate('/')
+  }
+
+  return (
+    <main className="main-content">
+      <h1>Battleship Game</h1>
+      <Lobby currentIdentity={identity} onLeave={handleLeave} />
+    </main>
+  )
+}
+
+// ── App ───────────────────────────────────────────────────────────────────
+
+export default function App() {
+  return (
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/lobby" element={<LobbyPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  )
+}
