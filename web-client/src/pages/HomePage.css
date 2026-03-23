@@ -1,0 +1,93 @@
+.btn-play {
+  padding: 0.75rem 3rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #e0e8f0;
+  background-color: #1a4a8a;
+  border: 1px solid #2d6acd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.btn-play:hover {
+  background-color: #2057a8;
+  border-color: #4a88e8;
+}
+
+.btn-play:active {
+  background-color: #163d74;
+}
+
+/* ── Username form ── */
+
+.username-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.username-input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  font-size: 1rem;
+  color: #e0e8f0;
+  background-color: #0f2240;
+  border: 1px solid #2d4a6e;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.username-input:focus {
+  border-color: #4a88e8;
+}
+
+.username-input--error {
+  border-color: #ef4444;
+}
+
+.username-input--error:focus {
+  border-color: #ef4444;
+}
+
+.input-error {
+  font-size: 0.8rem;
+  color: #ef4444;
+}
+
+.btn-lobby {
+  width: 100%;
+  padding: 0.65rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e0e8f0;
+  background-color: #1a4a8a;
+  border: 1px solid #2d6acd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.btn-lobby:hover:not(:disabled) {
+  background-color: #2057a8;
+  border-color: #4a88e8;
+}
+
+.submit-error {
+  font-size: 0.85rem;
+  color: #ef4444;
+  text-align: center;
+  max-width: 280px;
+}
