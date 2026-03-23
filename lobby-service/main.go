@@ -37,7 +37,17 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", statusHandler)
-	mux.HandleFunc("/users/", lobbyHandler.JoinLobby)
+	mux.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			lobbyHandler.JoinLobby(w, r)
+		case http.MethodDelete:
+			lobbyHandler.LeaveLobby(w, r)
+		default:
+			w.Header().Set("Allow", "POST, DELETE")
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
 	mux.HandleFunc("/users", lobbyHandler.ListUsers)
 
 	addr := ":8081"

@@ -37,6 +37,13 @@ func (s *Store) Touch(id string) {
 	}
 }
 
+// Remove deletes the user with the given ID from the store.
+func (s *Store) Remove(id string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.byID, id)
+}
+
 // Evict removes users whose LastSeen is older than evictAfter.
 func (s *Store) Evict() {
 	cutoff := time.Now().UTC().Add(-evictAfter)

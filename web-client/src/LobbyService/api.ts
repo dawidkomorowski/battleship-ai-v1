@@ -3,6 +3,17 @@ export interface LobbyUser {
   username: string
 }
 
+export async function leaveLobby(userID: string, authToken: string): Promise<void> {
+  try {
+    await fetch(`/api/lobby/users/${encodeURIComponent(userID)}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${authToken}` },
+    })
+  } catch {
+    // best-effort
+  }
+}
+
 export async function joinLobby(userID: string, authToken: string): Promise<boolean> {
   try {
     const res = await fetch(`/api/lobby/users/${encodeURIComponent(userID)}`, {

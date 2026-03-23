@@ -31,6 +31,29 @@
   gap: 0.5rem;
 }
 
+.previous-identities__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.previous-identities__play-as {
+  background: none;
+  border: 1px solid #2d4a6e;
+  color: #7ab8e8;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.previous-identities__play-as:hover {
+  background-color: #1a3a5e;
+  border-color: #4a88e8;
+}
+
 .previous-identities__remove {
   background: none;
   border: none;

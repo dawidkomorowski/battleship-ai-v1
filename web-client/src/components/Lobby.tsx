@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
-import { listLobbyUsers, type LobbyUser } from '../LobbyService/api'
+import { listLobbyUsers, leaveLobby, type LobbyUser } from '../LobbyService/api'
 import type { Identity } from '../IdentityStorage'
 import './Lobby.css'
 
 interface Props {
   currentIdentity: Identity
+  onLeave: () => void
 }
 
-export function Lobby({ currentIdentity }: Props) {
+export function Lobby({ currentIdentity, onLeave }: Props) {
   const [users, setUsers] = useState<LobbyUser[]>([])
 
   useEffect(() => {
@@ -26,6 +27,11 @@ export function Lobby({ currentIdentity }: Props) {
     }
   }, [currentIdentity])
 
+  const handleLeave = async () => {
+    await leaveLobby(currentIdentity.id, currentIdentity.authToken)
+    onLeave()
+  }
+
   const sortedUsers = [
     ...users.filter((u) => u.id === currentIdentity.id),
     ...users.filter((u) => u.id !== currentIdentity.id),
@@ -33,7 +39,10 @@ export function Lobby({ currentIdentity }: Props) {
 
   return (
     <div className="lobby">
-      <h2 className="lobby__title">Lobby</h2>
+      <div className="lobby__header">
+        <h2 className="lobby__title">Lobby</h2>
+        <button className="lobby__leave" onClick={handleLeave}>Leave Lobby</button>
+      </div>
       <ul className="lobby__users">
         {sortedUsers.map((user) => {
           const isMe = user.id === currentIdentity.id

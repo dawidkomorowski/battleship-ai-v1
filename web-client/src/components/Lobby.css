@@ -6,12 +6,34 @@
   min-width: 280px;
 }
 
+.lobby__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
 .lobby__title {
   font-size: 1.25rem;
   letter-spacing: 0.05em;
   color: #7a9bbf;
-  margin-bottom: 1rem;
-  text-align: center;
+}
+
+.lobby__leave {
+  background: none;
+  border: 1px solid #2d4a6e;
+  color: #7a9bbf;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.lobby__leave:hover {
+  background-color: #1a3a5e;
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
 .lobby__users {

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { identityStorage, type Identity } from './IdentityStorage'
 import { createUser, verifyIdentity, type CreateUserError } from './IdentityService/api'
-import { joinLobby } from './LobbyService/api'
+import { joinLobby, leaveLobby } from './LobbyService/api'
 import { PreviousIdentities } from './components/PreviousIdentities'
 import { Lobby } from './components/Lobby'
 
@@ -117,6 +117,24 @@ function App() {
     }
   }
 
+  const handleLeaveLobby = async () => {
+    if (currentIdentity) {
+      await leaveLobby(currentIdentity.id, currentIdentity.authToken)
+    }
+    setCurrentIdentity(null)
+    setView('home')
+  }
+
+  const handlePlayAs = async (identity: Identity) => {
+    setSubmitting(true)
+    setSubmitError(null)
+    identityStorage.setCurrent(identity)
+    setCurrentIdentity(identity)
+    await joinLobby(identity.id, identity.authToken)
+    setSubmitting(false)
+    setView('lobby')
+  }
+
   const submitErrorMessage =
     submitError === 'username_taken'
       ? 'This username is already taken. Please choose another.'
@@ -187,12 +205,13 @@ function App() {
                 identityStorage.delete(identity.id)
                 setPreviousIdentities(identityStorage.list())
               }}
+              onPlayAs={handlePlayAs}
             />
           </div>
         )}
 
         {view === 'lobby' && currentIdentity && (
-          <Lobby currentIdentity={currentIdentity} />
+          <Lobby currentIdentity={currentIdentity} onLeave={handleLeaveLobby} />
         )}
       </main>
     </div>

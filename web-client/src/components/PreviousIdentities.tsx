@@ -4,9 +4,10 @@ import type { Identity } from '../IdentityStorage'
 interface Props {
   identities: Identity[]
   onDelete: (identity: Identity) => void
+  onPlayAs: (identity: Identity) => void
 }
 
-export function PreviousIdentities({ identities, onDelete }: Props) {
+export function PreviousIdentities({ identities, onDelete, onPlayAs }: Props) {
   if (identities.length === 0) return null
 
   const handleDelete = (identity: Identity) => {
@@ -22,14 +23,24 @@ export function PreviousIdentities({ identities, onDelete }: Props) {
         {identities.map((identity) => (
           <li key={identity.id}>
             <span>{identity.username}</span>
-            <button
-              className="previous-identities__remove"
-              onClick={() => handleDelete(identity)}
-              title="Remove this identity"
-              aria-label={`Remove ${identity.username}`}
-            >
-              &times;
-            </button>
+            <div className="previous-identities__actions">
+              <button
+                className="previous-identities__play-as"
+                onClick={() => onPlayAs(identity)}
+                title={`Play as ${identity.username}`}
+                aria-label={`Play as ${identity.username}`}
+              >
+                Play as
+              </button>
+              <button
+                className="previous-identities__remove"
+                onClick={() => handleDelete(identity)}
+                title="Remove this identity"
+                aria-label={`Remove ${identity.username}`}
+              >
+                &times;
+              </button>
+            </div>
           </li>
         ))}
       </ul>

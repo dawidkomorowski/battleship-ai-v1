@@ -63,7 +63,7 @@ func (h *Handler) authenticate(userID, token string) (*identityUser, int) {
 // JoinLobby handles POST /users/{id} — authenticates the user and adds them to the lobby.
 func (h *Handler) JoinLobby(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", "POST")
+		w.Header().Set("Allow", "POST, DELETE")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -82,6 +82,30 @@ func (h *Handler) JoinLobby(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.store.Add(&User{ID: u.ID, Username: u.Username})
+	w.WriteHeader(http.StatusOK)
+}
+
+// LeaveLobby handles DELETE /users/{id} — authenticates the user and removes them from the lobby.
+func (h *Handler) LeaveLobby(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		w.Header().Set("Allow", "POST, DELETE")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := strings.TrimPrefix(r.URL.Path, "/users/")
+	if userID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if _, status := h.authenticate(userID, token); status != http.StatusOK {
+		w.WriteHeader(status)
+		return
+	}
+
+	h.store.Remove(userID)
 	w.WriteHeader(http.StatusOK)
 }
 
