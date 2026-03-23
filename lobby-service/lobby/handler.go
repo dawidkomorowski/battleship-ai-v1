@@ -102,6 +102,9 @@ func (h *Handler) ListUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Refresh last-seen for the calling user.
+	h.store.Touch(userID)
+
 	type userDTO struct {
 		ID       string `json:"id"`
 		Username string `json:"username"`

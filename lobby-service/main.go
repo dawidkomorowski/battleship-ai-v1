@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/battleship-ai-v1/lobby-service/lobby"
 )
@@ -22,6 +23,16 @@ func main() {
 	}
 
 	store := lobby.NewStore()
+
+	// Evict inactive users every 5 seconds.
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			store.Evict()
+		}
+	}()
+
 	lobbyHandler := lobby.NewHandler(store, identityBaseURL)
 
 	mux := http.NewServeMux()
