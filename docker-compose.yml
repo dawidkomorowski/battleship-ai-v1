@@ -8,6 +8,7 @@ services:
     depends_on:
       - identity-service
       - lobby-service
+      - chat-service
 
   identity-service:
     build:
@@ -24,5 +25,14 @@ services:
       - "8081"
     environment:
       - IDENTITY_SERVICE_URL=http://identity-service:8080
+    depends_on:
+      - identity-service
+
+  chat-service:
+    build:
+      context: ./chat-service
+      dockerfile: Dockerfile
+    expose:
+      - "8082"
     depends_on:
       - identity-service

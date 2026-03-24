@@ -54,6 +54,7 @@ function StatusDot({ status }: { status: ServiceStatus }) {
 export function ServiceStatus() {
   const identityStatus = useServiceStatus('/api/identity/status', 5000, 5000)
   const lobbyStatus = useServiceStatus('/api/lobby/status', 5000, 5000)
+  const chatStatus = useServiceStatus('/api/chat/status', 5000, 5000)
 
   return (
     <aside className="service-status">
@@ -66,6 +67,10 @@ export function ServiceStatus() {
         <li>
           <StatusDot status={lobbyStatus} />
           <span>lobby-service</span>
+        </li>
+        <li>
+          <StatusDot status={chatStatus} />
+          <span>chat-service</span>
         </li>
       </ul>
     </aside>
