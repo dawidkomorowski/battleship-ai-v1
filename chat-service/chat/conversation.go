@@ -1,10 +1,11 @@
 package chat
 
 import (
-	"crypto/rand"
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Conversation holds an ordered list of messages for a group of users.
@@ -18,7 +19,7 @@ type Conversation struct {
 // newConversation creates an empty Conversation with a new GUID.
 func newConversation() *Conversation {
 	return &Conversation{
-		ID:       generateUUID(),
+		ID:       uuid.NewString(),
 		messages: make([]*Message, 0),
 	}
 }
@@ -31,7 +32,7 @@ func (c *Conversation) AddMessage(userID, username, content string) (*Message, e
 	}
 
 	msg := &Message{
-		ID:        generateUUID(),
+		ID:        uuid.NewString(),
 		Timestamp: time.Now().UTC(),
 		Content:   content,
 		UserID:    userID,
@@ -51,14 +52,4 @@ func (c *Conversation) Messages() []*Message {
 	snapshot := make([]*Message, len(c.messages))
 	copy(snapshot, c.messages)
 	return snapshot
-}
-
-func generateUUID() string {
-	b := make([]byte, 16)
-	if _, err := rand.Read(b); err != nil {
-		panic(fmt.Sprintf("rand.Read: %v", err))
-	}
-	b[6] = (b[6] & 0x0f) | 0x40 // version 4
-	b[8] = (b[8] & 0x3f) | 0x80 // variant
-	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 }

@@ -1,6 +1,7 @@
 # Stage 1: Build
 FROM golang:1.24-alpine AS builder
 WORKDIR /app
+ENV GOFLAGS=-mod=mod
 COPY go.mod ./
 RUN go mod download
 COPY . .

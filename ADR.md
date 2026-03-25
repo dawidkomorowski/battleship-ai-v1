@@ -119,3 +119,20 @@ Use the Go standard library `net/http` package as the HTTP server for all backen
 
 **Rationale:**  
 For the current scope, the standard library is sufficient. It avoids third-party dependency risk, keeps Docker image build times short, and is idiomatic Go. A framework can be introduced later if routing complexity justifies it.
+
+---
+
+## ADR-008 — Third-party UUID generation: github.com/google/uuid
+
+**Date:** 2026-03-25  
+**Status:** Accepted
+
+**Context:**  
+Backend services (identity-service, chat-service) needed to generate RFC 4122 version-4 UUIDs. An initial implementation used `crypto/rand` directly with manual byte manipulation inside each service.
+
+**Decision:**  
+Replace the hand-rolled `generateUUID()` functions with `github.com/google/uuid` (`uuid.NewString()`). Each service that generates UUIDs adds `require github.com/google/uuid v1.6.0` to its `go.mod`.
+
+**Rationale:**  
+The custom implementation, while functionally correct, duplicated non-trivial bit-manipulation logic across services and was not tested. `github.com/google/uuid` is a widely-used, well-tested library maintained by Google with no transitive dependencies, making the maintenance cost negligible while eliminating the risk of subtle formatting bugs in the hand-rolled code.
+
