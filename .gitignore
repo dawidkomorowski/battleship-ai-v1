@@ -1,0 +1,34 @@
+# ── Go ────────────────────────────────────────────────────────────────────────
+# Compiled binaries
+/identity-service/identity-service
+/lobby-service/lobby-service
+/chat-service/chat-service
+
+# Test cache and coverage
+*.test
+*.out
+coverage.html
+
+# ── Node / Vite ───────────────────────────────────────────────────────────────
+web-client/node_modules/
+web-client/dist/
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+# Ignore local override files; keep docker-compose.yml tracked
+docker-compose.override.yml
+
+# ── OS / editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+.vscode/settings.json
+.vscode/launch.json
+
+# ── Environment / secrets ─────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local

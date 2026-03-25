@@ -37,18 +37,9 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", statusHandler)
-	mux.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			lobbyHandler.JoinLobby(w, r)
-		case http.MethodDelete:
-			lobbyHandler.LeaveLobby(w, r)
-		default:
-			w.Header().Set("Allow", "POST, DELETE")
-			w.WriteHeader(http.StatusMethodNotAllowed)
-		}
-	})
-	mux.HandleFunc("/users", lobbyHandler.ListUsers)
+	mux.HandleFunc("POST /users/{id}", lobbyHandler.JoinLobby)
+	mux.HandleFunc("DELETE /users/{id}", lobbyHandler.LeaveLobby)
+	mux.HandleFunc("GET /users", lobbyHandler.ListUsers)
 
 	addr := ":8081"
 	log.Printf("lobby-service listening on %s (identity-service: %s)", addr, identityBaseURL)

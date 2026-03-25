@@ -20,13 +20,7 @@ func NewHandler(store *Store) *Handler {
 // Get handles GET /users/{id} — authenticates the request via the
 // Authorization: Bearer <token> header and returns the user's public profile.
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.Header().Set("Allow", "GET")
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	id := strings.TrimPrefix(r.URL.Path, "/users/")
+	id := r.PathValue("id")
 	if id == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -49,12 +43,6 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 // Create handles POST /users — validates the request, creates a user, and
 // returns the new user's ID and auth token.
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", "POST")
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
 	var req createUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, errorResponse{

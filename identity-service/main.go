@@ -20,8 +20,8 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", statusHandler)
-	mux.HandleFunc("/users", usersHandler.Create)
-	mux.HandleFunc("/users/", usersHandler.Get)
+	mux.HandleFunc("POST /users", usersHandler.Create)
+	mux.HandleFunc("GET /users/{id}", usersHandler.Get)
 
 	addr := ":8080"
 	log.Printf("identity-service listening on %s", addr)

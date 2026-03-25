@@ -115,10 +115,10 @@ Routing all API traffic through the frontend's nginx keeps the browser on a sing
 Backend services need an HTTP server. Go has a capable standard library `net/http` package.
 
 **Decision:**  
-Use the Go standard library `net/http` package as the HTTP server for all backend services, with no external web framework dependency.
+Use the Go standard library `net/http` package as the HTTP server for all backend services, with no external web framework dependency. Route registration uses the Go 1.22+ enhanced `ServeMux` syntax with method prefixes and path wildcards (e.g. `"POST /users/{id}"`).
 
 **Rationale:**  
-For the current scope, the standard library is sufficient. It avoids third-party dependency risk, keeps Docker image build times short, and is idiomatic Go. A framework can be introduced later if routing complexity justifies it.
+For the current scope, the standard library is sufficient. It avoids third-party dependency risk, keeps Docker image build times short, and is idiomatic Go. The Go 1.22 `ServeMux` enhancements — method-prefixed patterns (`"GET /path"`) and typed path parameters (`r.PathValue("id")`) — eliminate the need for manual method dispatch and path string trimming, removing the main ergonomic arguments for an external router. A framework can be introduced later if middleware chaining or more advanced routing complexity justifies it.
 
 ---
 
