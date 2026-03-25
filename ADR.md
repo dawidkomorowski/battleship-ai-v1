@@ -136,3 +136,23 @@ Replace the hand-rolled `generateUUID()` functions with `github.com/google/uuid`
 **Rationale:**  
 The custom implementation, while functionally correct, duplicated non-trivial bit-manipulation logic across services and was not tested. `github.com/google/uuid` is a widely-used, well-tested library maintained by Google with no transitive dependencies, making the maintenance cost negligible while eliminating the risk of subtle formatting bugs in the hand-rolled code.
 
+---
+
+## ADR-009 — Dev container for local development tooling
+
+**Date:** 2026-03-25  
+**Status:** Accepted
+
+**Context:**  
+The project requires Go 1.24 (backend services) and Node.js 22 (web-client) for local development tasks such as running `go mod tidy`, `go vet`, `npm install`, and getting IDE language support. Installing these runtimes directly on the host creates a per-developer setup burden and risks version drift.
+
+**Decision:**  
+Provide a `.devcontainer/devcontainer.json` at the repository root. It uses:
+- `mcr.microsoft.com/devcontainers/base:ubuntu-24.04` as the base image
+- `ghcr.io/devcontainers/features/go:1` (version 1.24)
+- `ghcr.io/devcontainers/features/node:1` (version 22)
+- `ghcr.io/devcontainers/features/docker-outside-of-docker:1` — mounts the host Docker socket so `docker compose` commands work inside the container without Docker-in-Docker complexity
+
+**Rationale:**  
+Docker is already a requirement for running the application stack. Re-using it for the development environment means contributors need no additional local installations. The Docker-outside-of-Docker approach avoids the performance and security overhead of nested Docker daemons while still allowing full use of `docker compose build/up/down` from within the dev container.
+
