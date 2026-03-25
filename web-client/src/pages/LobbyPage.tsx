@@ -18,7 +18,7 @@ export function LobbyPage() {
   return (
     <main className="main-content main-content--lobby">
       <h1>Battleship Game</h1>
-      <Lobby currentIdentity={identity} onLeave={handleLeave} />
+      <Lobby currentIdentity={identity} onLeave={handleLeave} onUnauthorized={() => navigate('/')} />
     </main>
   )
 }

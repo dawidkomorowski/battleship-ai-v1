@@ -26,7 +26,11 @@ export async function joinLobby(userID: string, authToken: string): Promise<bool
   }
 }
 
-export async function listLobbyUsers(userID: string, authToken: string): Promise<LobbyUser[]> {
+export type ListLobbyUsersResult =
+  | { ok: true; users: LobbyUser[] }
+  | { ok: false; unauthorized: boolean }
+
+export async function listLobbyUsers(userID: string, authToken: string): Promise<ListLobbyUsersResult> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 5000)
   try {
@@ -35,11 +39,12 @@ export async function listLobbyUsers(userID: string, authToken: string): Promise
       { headers: { Authorization: `Bearer ${authToken}` }, signal: controller.signal },
     )
     clearTimeout(timeoutId)
-    if (!res.ok) return []
+    if (res.status === 403) return { ok: false, unauthorized: true }
+    if (!res.ok) return { ok: false, unauthorized: false }
     const data = await res.json()
-    return data.users as LobbyUser[]
+    return { ok: true, users: data.users as LobbyUser[] }
   } catch {
     clearTimeout(timeoutId)
-    return []
+    return { ok: false, unauthorized: false }
   }
 }

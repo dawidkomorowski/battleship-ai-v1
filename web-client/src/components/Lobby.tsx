@@ -6,9 +6,10 @@ import './Lobby.css'
 interface Props {
   currentIdentity: Identity
   onLeave: () => void
+  onUnauthorized: () => void
 }
 
-export function Lobby({ currentIdentity, onLeave }: Props) {
+export function Lobby({ currentIdentity, onLeave, onUnauthorized }: Props) {
   const [users, setUsers] = useState<LobbyUser[]>([])
 
   useEffect(() => {
@@ -16,7 +17,12 @@ export function Lobby({ currentIdentity, onLeave }: Props) {
 
     const fetchUsers = async () => {
       const result = await listLobbyUsers(currentIdentity.id, currentIdentity.authToken)
-      if (!cancelled) setUsers(result)
+      if (cancelled) return
+      if (!result.ok) {
+        if (result.unauthorized) onUnauthorized()
+        return
+      }
+      setUsers(result.users)
     }
 
     fetchUsers()
