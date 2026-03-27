@@ -98,6 +98,7 @@ export function HomePage() {
                 setTouched(false)
                 setSubmitError(null)
               }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleEnterLobby() }}
               aria-label="Username"
               aria-describedby={
                 showInputError ? 'username-error' :
