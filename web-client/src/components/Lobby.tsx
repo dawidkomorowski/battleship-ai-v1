@@ -19,7 +19,7 @@ export function Lobby({ currentIdentity, onLeave, onUnauthorized }: Props) {
       const result = await listLobbyUsers(currentIdentity.id, currentIdentity.authToken)
       if (cancelled) return
       if (!result.ok) {
-        if (result.unauthorized) onUnauthorized()
+        if (result.reason === 'unauthorized' || result.reason === 'evicted') onUnauthorized()
         return
       }
       setUsers(result.users)

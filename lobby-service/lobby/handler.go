@@ -108,8 +108,17 @@ func (h *Handler) ListUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Refresh last-seen for the calling user.
-	h.store.Touch(userID)
+	// Refresh last-seen for the calling user. If Touch returns false the user
+	// has been evicted from the lobby — tell the client to exit.
+	if !h.store.Touch(userID) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusGone)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error":   "evicted",
+			"message": "user is no longer in the lobby",
+		})
+		return
+	}
 
 	type userDTO struct {
 		ID       string `json:"id"`

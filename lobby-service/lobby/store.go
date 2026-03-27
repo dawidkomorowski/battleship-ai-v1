@@ -28,13 +28,15 @@ func (s *Store) Add(u *User) {
 }
 
 // Touch updates the LastSeen timestamp for the user with the given ID.
-// It is a no-op if the user is not in the store.
-func (s *Store) Touch(id string) {
+// It returns true if the user was found, false if they are no longer in the store.
+func (s *Store) Touch(id string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if u, ok := s.byID[id]; ok {
+	u, ok := s.byID[id]
+	if ok {
 		u.LastSeen = time.Now().UTC()
 	}
+	return ok
 }
 
 // Remove deletes the user with the given ID from the store.
